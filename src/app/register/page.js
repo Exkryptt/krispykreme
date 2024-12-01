@@ -1,10 +1,15 @@
 'use client';
+
 import { useState } from 'react';
+import { TextField, Button, Box, Typography, Container, Alert } from '@mui/material';
+import { useRouter } from 'next/navigation';
 
 export default function RegisterPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
+    const [isSuccess, setIsSuccess] = useState(false); //new state for flag to track
+    const router = useRouter();
 
     const handleRegister = async () => {
         const res = await fetch('/api/register', {
@@ -15,42 +20,56 @@ export default function RegisterPage() {
 
         const data = await res.json();
         if (res.ok) {
-            setMessage('Registration successful!');
+            setMessage('Registration successful! Redirecting to login...');
+            setIsSuccess(true); //flag success
+            setTimeout(() => {
+                router.push('/login'); //short delay doesnt work
+            }, 2000);
         } else {
             setMessage(`Error: ${data.error}`);
+            setIsSuccess(false); //fail flag
         }
     };
 
     return (
-        <div style={{ padding: '2rem' }}>
-            <h1>Register</h1>
-            <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={{ display: 'block', marginBottom: '1rem', padding: '0.5rem', width: '100%' }}
-            />
-            <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{ display: 'block', marginBottom: '1rem', padding: '0.5rem', width: '100%' }}
-            />
-            <button
-                onClick={handleRegister}
-                style={{
-                    padding: '0.5rem 1rem',
-                    backgroundColor: '#0070f3',
-                    color: 'white',
-                    border: 'none',
-                    cursor: 'pointer',
-                }}
-            >
+        <Container maxWidth="sm" sx={{ padding: 3, backgroundColor: 'white', minHeight: '100vh' }}>
+            <Typography variant="h4" gutterBottom align="center">
                 Register
-            </button>
-            <p>{message}</p>
-        </div>
+            </Typography>
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <TextField
+                    label="Email"
+                    type="email"
+                    variant="outlined"
+                    fullWidth
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                />
+                <TextField
+                    label="Password"
+                    type="password"
+                    variant="outlined"
+                    fullWidth
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                />
+
+                <Button
+                    onClick={handleRegister}
+                    variant="contained"
+                    color="primary"
+                    sx={{ padding: '0.8rem' }}
+                >
+                    Register
+                </Button>
+
+                {message && (
+                    <Alert severity={isSuccess ? 'success' : 'error'} sx={{ marginTop: 2 }}>
+                        {message}
+                    </Alert>
+                )}
+            </Box>
+        </Container>
     );
 }

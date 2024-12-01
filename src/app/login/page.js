@@ -1,11 +1,14 @@
 'use client';
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { TextField, Button, Box, Typography, Container, Alert } from '@mui/material';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
+    const [isSuccess, setIsSuccess] = useState(false); //new state
     const router = useRouter();
 
     const handleLogin = async () => {
@@ -18,47 +21,58 @@ export default function LoginPage() {
         const data = await res.json();
         if (res.ok) {
             setMessage('Login successful!');
-            // Redirect based on the user's role
+            setIsSuccess(true); // Set success true
+            // redirect based on role
             if (data.role === 'customer') {
-                router.push('/customer'); // Redirect customer to the customer page
+                router.push('/customer'); //cusomer page
             } else if (data.role === 'manager') {
-                router.push('/manager-dashboard'); // Redirect manager to the dashboard
+                router.push('/manager-dashboard'); // manager page
             }
         } else {
             setMessage(`Error: ${data.error}`);
+            setIsSuccess(false); // success false
         }
     };
 
     return (
-        <div style={{ padding: '2rem' }}>
-            <h1>Login</h1>
-            <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={{ display: 'block', marginBottom: '1rem', padding: '0.5rem', width: '100%' }}
-            />
-            <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{ display: 'block', marginBottom: '1rem', padding: '0.5rem', width: '100%' }}
-            />
-            <button
-                onClick={handleLogin}
-                style={{
-                    padding: '0.5rem 1rem',
-                    backgroundColor: '#0070f3',
-                    color: 'white',
-                    border: 'none',
-                    cursor: 'pointer',
-                }}
-            >
+        <Container maxWidth="sm" sx={{ padding: 3, backgroundColor: 'white', minHeight: '400vh' }}>
+            <Typography variant="h4" gutterBottom align="center">
                 Login
-            </button>
-            <p>{message}</p>
-        </div>
+            </Typography>
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <TextField
+                    label="Email"
+                    type="email"
+                    variant="outlined"
+                    fullWidth
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                />
+                <TextField
+                    label="Password"
+                    type="password"
+                    variant="outlined"
+                    fullWidth
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                />
+
+                <Button
+                    onClick={handleLogin}
+                    variant="contained"
+                    color="primary"
+                    sx={{ padding: '0.8rem' }}
+                >
+                    Login
+                </Button>
+
+                {message && (
+                    <Alert severity={isSuccess ? 'success' : 'error'} sx={{ marginTop: 2 }}>
+                        {message}
+                    </Alert>
+                )}
+            </Box>
+        </Container>
     );
 }

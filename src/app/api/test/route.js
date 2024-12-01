@@ -1,14 +1,15 @@
+        // TESTTTTTT
+
+
 import connectToDatabase from '../../../../lib/mongodb';
 
 export async function GET(req, res) {
     try {
         const db = await connectToDatabase();
-
-        // Example query: Fetch all collections in the database
         const collections = await db.listCollections().toArray();
-        console.log('Collections:', collections); // Log collections for debugging
+        console.log('Collections:', collections);
 
-        // Send a JSON response back
+
         return new Response(JSON.stringify({
             message: 'Connected to MongoDB successfully!',
             collections
@@ -16,7 +17,6 @@ export async function GET(req, res) {
     } catch (error) {
         console.error('Database connection error:', error);
 
-        // Send an error response
         return new Response(JSON.stringify({ error: 'Failed to connect to the database' }), {
             status: 500,
         });

@@ -3,7 +3,7 @@ import { getCustomSession } from '../../../../lib/sessionCode.js';
 export async function GET(req, res) {
     const session = await getCustomSession();
 
-    // Retrieve session data
+    // getsession data
     const role = session.role;
     const email = session.email;
 

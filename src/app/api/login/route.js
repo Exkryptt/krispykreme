@@ -8,28 +8,28 @@ export async function POST(req) {
         const db = await connectToDatabase();
         const collection = db.collection('users');
 
-        // Find the user by email
+        //email login logic
         const user = await collection.findOne({ email });
         if (!user) {
             return new Response(JSON.stringify({ error: 'Invalid email or password' }), { status: 401 });
         }
 
-        // Check if the password is valid
+        //check password true
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
             return new Response(JSON.stringify({ error: 'Invalid email or password' }), { status: 401 });
         }
 
-        // Get or initialize the session
+        //get session or start
         const session = await getCustomSession();
 
-        // Set session data, including _id and role
+        // set session data including _id and role
         session.email = user.email;
         session.role = user.role;
-        session._id = user._id.toString();  // Store the MongoDB _id in session
+        session._id = user._id.toString();  // store
         await session.save();
 
-        // Redirect based on the user's role
+        //if manager go dashboard etc
         if (user.role === 'manager') {
             return new Response(
                 JSON.stringify({ message: 'Login successful!', role: user.role }),

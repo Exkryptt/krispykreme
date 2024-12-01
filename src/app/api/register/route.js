@@ -12,23 +12,24 @@ export async function POST(req) {
         const db = await connectToDatabase();
         const collection = db.collection('users');
 
-        // Check if the user already exists
+        //check if user exist
         const existingUser = await collection.findOne({ email });
         if (existingUser) {
             return new Response(JSON.stringify({ error: 'User already exists' }), { status: 409 });
         }
 
-        // Hash the password
+        //Hash 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Insert the user with the 'customer' role
+        // make registered user be customer by default
         await collection.insertOne({
             email,
             password: hashedPassword,
             role: 'customer',
         });
 
-        return new Response(JSON.stringify({ message: 'User registered successfully!' }), { status: 201 });
+        //success
+        return new Response(JSON.stringify({ message: 'User registered successfully! Please log in.' }), { status: 201 });
     } catch (error) {
         console.error('Error during registration:', error);
         return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
