@@ -80,6 +80,7 @@ export default function CustomerPage() {
                     </Typography>
                     <Button color="inherit" onClick={handleLogout}>Logout</Button>
                     <Button color="inherit" onClick={() => router.push('/view_cart')}>View Cart</Button>
+                    <Button color="inherit" onClick={() => router.push('/register')}>Register</Button>
                 </Toolbar>
             </AppBar>
 
