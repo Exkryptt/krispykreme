@@ -2,45 +2,86 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { TextField, Button, Box, Typography, Container, Alert } from '@mui/material';
+import { TextField, Button, Box, Typography, Container, Alert, CircularProgress } from '@mui/material';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
-    const [isSuccess, setIsSuccess] = useState(false); //new state
+    const [isSuccess, setIsSuccess] = useState(false);
+    const [isLoading, setIsLoading] = useState(false); // Loading state
     const router = useRouter();
 
     const handleLogin = async () => {
-        const res = await fetch('/api/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
-        });
+        // Reset message and start loading
+        setMessage('');
+        setIsLoading(true);
 
-        const data = await res.json();
-        if (res.ok) {
-            setMessage('Login successful!');
-            setIsSuccess(true); // Set success true
-            // redirect based on role
-            if (data.role === 'customer') {
-                router.push('/customer'); //cusomer page
-            } else if (data.role === 'manager') {
-                router.push('/manager-dashboard'); // manager page
+        // Client-side validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email || !password) {
+            setMessage('Email and password are required.');
+            setIsSuccess(false);
+            setIsLoading(false);
+            return;
+        }
+        if (!emailRegex.test(email)) {
+            setMessage('Invalid email format.');
+            setIsSuccess(false);
+            setIsLoading(false);
+            return;
+        }
+        if (password.length < 6 || password.length > 100) {
+            setMessage('Password must be between 6 and 100 characters.');
+            setIsSuccess(false);
+            setIsLoading(false);
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email.trim(), password }),
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                setMessage('Login successful!');
+                setIsSuccess(true);
+
+                // Redirect based on role
+                if (data.role === 'customer') {
+                    router.push('/customer');
+                } else if (data.role === 'manager') {
+                    router.push('/manager-dashboard');
+                }
+            } else {
+                setMessage(`Error: ${data.error}`);
+                setIsSuccess(false);
             }
-        } else {
-            setMessage(`Error: ${data.error}`);
-            setIsSuccess(false); // success false
+        } catch (error) {
+            setMessage('An unexpected error occurred. Please try again.');
+            setIsSuccess(false);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     return (
-        <Container maxWidth="sm" sx={{ padding: 3, backgroundColor: 'white', minHeight: '400vh' }}>
+        <Container maxWidth="sm" sx={{ padding: 3, backgroundColor: 'white', minHeight: '100vh' }}>
             <Typography variant="h4" gutterBottom align="center">
                 Login
             </Typography>
 
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box
+                component="form"
+                sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    handleLogin();
+                }}
+            >
                 <TextField
                     label="Email"
                     type="email"
@@ -48,6 +89,7 @@ export default function LoginPage() {
                     fullWidth
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    required
                 />
                 <TextField
                     label="Password"
@@ -56,6 +98,7 @@ export default function LoginPage() {
                     fullWidth
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    required
                 />
 
                 <Button
@@ -63,8 +106,9 @@ export default function LoginPage() {
                     variant="contained"
                     color="primary"
                     sx={{ padding: '0.8rem' }}
+                    disabled={isLoading} // Disable during loading
                 >
-                    Login
+                    {isLoading ? <CircularProgress size={24} /> : 'Login'}
                 </Button>
 
                 {message && (

@@ -8,34 +8,40 @@ export async function POST(req) {
         const db = await connectToDatabase();
         const collection = db.collection('users');
 
-        //email login logic
+        // Validate input
+        if (!email || !password) {
+            return new Response(JSON.stringify({ error: 'Email and password are required' }), { status: 400 });
+        }
+        if (email.length > 50) {
+            return new Response(JSON.stringify({ error: 'Email too long (max 50 characters)' }), { status: 400 });
+        }
+        if (password.length < 6 || password.length > 100) {
+            return new Response(JSON.stringify({ error: 'Password must be between 6 and 100 characters' }), { status: 400 });
+        }
+
+        // Email login logic
         const user = await collection.findOne({ email });
         if (!user) {
             return new Response(JSON.stringify({ error: 'Invalid email or password' }), { status: 401 });
         }
 
-        //check password true
+        // Check password
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
             return new Response(JSON.stringify({ error: 'Invalid email or password' }), { status: 401 });
         }
 
-        //get session or start
+        // Get session or start one
         const session = await getCustomSession();
 
-        // set session data including _id and role
+        // Set session data
         session.email = user.email;
         session.role = user.role;
-        session._id = user._id.toString();  // store
+        session._id = user._id.toString(); // Store user ID
         await session.save();
 
-        //if manager go dashboard etc
-        if (user.role === 'manager') {
-            return new Response(
-                JSON.stringify({ message: 'Login successful!', role: user.role }),
-                { status: 200 }
-            );
-        } else if (user.role === 'customer') {
+        // Role-based response
+        if (user.role === 'manager' || user.role === 'customer') {
             return new Response(
                 JSON.stringify({ message: 'Login successful!', role: user.role }),
                 { status: 200 }
