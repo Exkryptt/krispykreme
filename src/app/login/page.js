@@ -108,6 +108,16 @@ export default function LoginPage() {
                     sx={{ padding: '0.8rem' }}
                     disabled={isLoading} // Disable during loading
                 >
+                    <Button
+    onClick={() => router.push('/register')}
+    variant="contained"
+    color="secondary"
+    sx={{ padding: '0.8rem' }}
+>
+    Register
+</Button>
+
+                    
                     {isLoading ? <CircularProgress size={24} /> : 'Login'}
                 </Button>
 
